@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slap Battles — Hit Effects Encyclopedia</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0d0d18; --surface:#16162a; --border:#2a2a4a; --text:#e8e8ff; --muted:#7070a0;
+    --common:#9ca3af; --uncommon:#4ade80; --rare:#60a5fa; --epic:#a855f7;
+    --legendary:#facc15; --mythical:#f97316; --vip:#ec4899; --other:#64748b; --accent:#7c3aed;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh;
+    background-image:radial-gradient(ellipse at 20% 10%,rgba(124,58,237,.18) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 90%,rgba(249,115,22,.12) 0%,transparent 50%);}
+  header{text-align:center;padding:2.5rem 1rem 1rem;}
+  header h1{font-family:'Bangers',cursive;font-size:clamp(2.8rem,8vw,5rem);letter-spacing:3px;
+    background:linear-gradient(135deg,#f97316,#facc15,#a855f7,#60a5fa);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    filter:drop-shadow(0 0 20px rgba(249,115,22,.4));}
+  header p{color:var(--muted);font-size:.95rem;margin-top:.4rem;}
+
+  .controls{max-width:1100px;margin:1.5rem auto;padding:0 1rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;}
+  .search-wrap{flex:1;min-width:200px;position:relative;}
+  .search-wrap input{width:100%;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;
+    padding:.6rem 1rem .6rem 2.4rem;color:var(--text);font-family:'Nunito',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s;}
+  .search-wrap input:focus{border-color:var(--accent);}
+  .search-wrap .icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+  .filter-group{display:flex;flex-wrap:wrap;gap:.45rem;}
+  .filter-btn{border:1.5px solid transparent;border-radius:8px;padding:.38rem .85rem;font-family:'Nunito',sans-serif;
+    font-size:.82rem;font-weight:700;cursor:pointer;transition:all .18s;background:var(--surface);color:var(--muted);}
+  .filter-btn:hover{filter:brightness(1.3);}
+  .filter-btn.active{color:#fff;}
+  .filter-btn[data-f="all"]{border-color:var(--accent);}         .filter-btn[data-f="all"].active{background:var(--accent);}
+  .filter-btn[data-f="uncommon"]{border-color:var(--uncommon);}  .filter-btn[data-f="uncommon"].active{background:var(--uncommon);color:#111;}
+  .filter-btn[data-f="rare"]{border-color:var(--rare);}          .filter-btn[data-f="rare"].active{background:var(--rare);color:#111;}
+  .filter-btn[data-f="epic"]{border-color:var(--epic);}          .filter-btn[data-f="epic"].active{background:var(--epic);}
+  .filter-btn[data-f="legendary"]{border-color:var(--legendary);} .filter-btn[data-f="legendary"].active{background:var(--legendary);color:#111;}
+  .filter-btn[data-f="mythical"]{border-color:var(--mythical);}  .filter-btn[data-f="mythical"].active{background:var(--mythical);color:#111;}
+  .filter-btn[data-f="vip"]{border-color:var(--vip);}            .filter-btn[data-f="vip"].active{background:var(--vip);}
+  .filter-btn[data-f="other"]{border-color:var(--other);}        .filter-btn[data-f="other"].active{background:var(--other);}
+
+  .stats{max-width:1100px;margin:0 auto .4rem;padding:0 1rem;color:var(--muted);font-size:.83rem;}
+  .collected-bar{max-width:1100px;margin:0 auto .9rem;padding:0 1rem;display:flex;align-items:center;gap:.75rem;}
+  .collected-label{font-size:.83rem;color:var(--muted);white-space:nowrap;}
+  .collected-label span{color:#22c55e;font-weight:800;}
+  .progress-track{flex:1;height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,#22c55e,#86efac);border-radius:99px;transition:width .3s ease;width:0%;}
+  .clear-btn{font-size:.75rem;font-weight:700;font-family:'Nunito',sans-serif;background:transparent;border:1px solid var(--border);
+    border-radius:6px;padding:.25rem .55rem;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;}
+  .clear-btn:hover{border-color:#ef4444;color:#ef4444;}
+
+  .section-divider{max-width:1100px;margin:2rem auto .5rem;padding:0 1rem;display:flex;align-items:center;gap:.75rem;}
+  .section-divider-label{font-family:'Bangers',cursive;font-size:1rem;letter-spacing:2px;color:var(--muted);text-transform:uppercase;white-space:nowrap;}
+  .section-divider-line{flex:1;height:1px;background:var(--border);}
+
+  .crates-wrapper{max-width:1100px;margin:0 auto;padding:0 1rem 1rem;}
+  .crate-section{margin-bottom:2.2rem;}
+  .crate-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+  .crate-icon{font-size:1.6rem;}
+  .crate-name{font-family:'Bangers',cursive;font-size:1.7rem;letter-spacing:1.5px;}
+  .crate-cost{font-size:.78rem;font-weight:700;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;padding:.2rem .55rem;color:var(--muted);}
+  .crate-count{margin-left:auto;font-size:.78rem;color:var(--muted);}
+
+  .cn-standard{color:#4ade80;} .cn-megarock{color:#f97316;} .cn-bob{color:#60a5fa;}
+  .cn-barzil{color:#a855f7;}   .cn-overkill{color:#facc15;} .cn-guide{color:#38bdf8;}
+  .cn-jacks{color:#fb923c;}    .cn-peepmas{color:#a5f3fc;}  .cn-valentines{color:#f472b6;}
+  .cn-stpatricks{color:#4ade80;} .cn-easter{color:#fbbf24;} .cn-alchemist{color:#c084fc;}
+  .cn-evilbarzil{color:#f87171;} .cn-coffin{color:#94a3b8;} .cn-festive{color:#7dd3fc;}
+  .cn-freeother{color:#94a3b8;}
+
+  .effects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.7rem;}
+
+  .effect-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:.75rem .9rem;
+    cursor:pointer;user-select:none;transition:transform .15s,box-shadow .15s,opacity .15s;position:relative;overflow:hidden;}
+  .effect-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;pointer-events:none;}
+  .effect-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.4);}
+  .effect-card:hover::before{opacity:1;}
+
+  .effect-card[data-rarity="uncommon"]{border-color:var(--uncommon);}
+  .effect-card[data-rarity="uncommon"]::before{background:linear-gradient(135deg,rgba(74,222,128,.07),transparent);}
+  .effect-card[data-rarity="rare"]{border-color:var(--rare);}
+  .effect-card[data-rarity="rare"]::before{background:linear-gradient(135deg,rgba(96,165,250,.07),transparent);}
+  .effect-card[data-rarity="epic"]{border-color:var(--epic);}
+  .effect-card[data-rarity="epic"]::before{background:linear-gradient(135deg,rgba(168,85,247,.1),transparent);}
+  .effect-card[data-rarity="legendary"]{border-color:var(--legendary);box-shadow:0 0 10px rgba(250,204,21,.1);}
+  .effect-card[data-rarity="legendary"]::before{background:linear-gradient(135deg,rgba(250,204,21,.1),transparent);}
+  .effect-card[data-rarity="mythical"]{border-color:var(--mythical);box-shadow:0 0 14px rgba(249,115,22,.18);}
+  .effect-card[data-rarity="mythical"]::before{background:linear-gradient(135deg,rgba(249,115,22,.12),transparent);}
+  .effect-card[data-rarity="vip"]{border-color:var(--vip);box-shadow:0 0 12px rgba(236,72,153,.15);}
+  .effect-card[data-rarity="vip"]::before{background:linear-gradient(135deg,rgba(236,72,153,.1),transparent);}
+  .effect-card[data-rarity="other"]{border-color:var(--other);}
+  .effect-card[data-rarity="common"]{border-color:var(--common);}
+  .effect-card.hidden{display:none;}
+
+  .effect-card.checked{opacity:.45;}
+  .effect-card.checked .effect-name{text-decoration:line-through;text-decoration-color:rgba(255,255,255,.35);}
+  .checkmark{position:absolute;top:.5rem;right:.55rem;width:22px;height:22px;border-radius:50%;
+    border:2px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;
+    font-size:.82rem;font-weight:900;color:transparent;transition:all .15s;}
+  .effect-card.checked .checkmark{background:#22c55e;border-color:#22c55e;color:#fff;box-shadow:0 0 8px rgba(34,197,94,.5);}
+
+  .effect-name{font-weight:800;font-size:.95rem;margin-bottom:.3rem;line-height:1.2;}
+  .rarity-badge{display:inline-block;font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;border-radius:4px;padding:.1rem .4rem;margin-bottom:.35rem;}
+  .rarity-badge.common   {background:rgba(156,163,175,.15);color:var(--common);}
+  .rarity-badge.uncommon {background:rgba(74,222,128,.12); color:var(--uncommon);}
+  .rarity-badge.rare     {background:rgba(96,165,250,.12); color:var(--rare);}
+  .rarity-badge.epic     {background:rgba(168,85,247,.14); color:var(--epic);}
+  .rarity-badge.legendary{background:rgba(250,204,21,.12); color:var(--legendary);}
+  .rarity-badge.mythical {background:rgba(249,115,22,.14); color:var(--mythical);}
+  .rarity-badge.vip      {background:rgba(236,72,153,.14); color:var(--vip);}
+  .rarity-badge.other    {background:rgba(100,116,139,.14);color:var(--other);}
+  .effect-chance{font-size:.78rem;color:var(--muted);font-weight:600;}
+  .limited-tag{font-size:.65rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px;
+    background:rgba(239,68,68,.15);color:#f87171;border-radius:4px;padding:.1rem .38rem;margin-left:.3rem;}
+  .no-results{text-align:center;color:var(--muted);padding:3rem 1rem;font-size:1.1rem;display:none;}
+  .footer-space{height:3rem;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>👋 Slap Battles Hit Effects</h1>
+  <p>Every hit effect, every crate — accurate data from the official wiki · Click to track what you own</p>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <span class="icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search effects..." oninput="filterAll()">
+  </div>
+  <div class="filter-group">
+    <button class="filter-btn active" data-f="all"       onclick="setRarity('all')">All</button>
+    <button class="filter-btn"        data-f="uncommon"  onclick="setRarity('uncommon')">Uncommon</button>
+    <button class="filter-btn"        data-f="rare"      onclick="setRarity('rare')">Rare</button>
+    <button class="filter-btn"        data-f="epic"      onclick="setRarity('epic')">Epic</button>
+    <button class="filter-btn"        data-f="legendary" onclick="setRarity('legendary')">Legendary</button>
+    <button class="filter-btn"        data-f="mythical"  onclick="setRarity('mythical')">Mythical</button>
+    <button class="filter-btn"        data-f="vip"       onclick="setRarity('vip')">VIP</button>
+    <button class="filter-btn"        data-f="other"     onclick="setRarity('other')">Other</button>
+  </div>
+</div>
+
+<div class="stats" id="statsBar">Loading...</div>
+<div class="collected-bar">
+  <div class="collected-label">Collected: <span id="collectedCount">0</span> / <span id="totalCount">0</span></div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <button class="clear-btn" onclick="clearAll()">Clear all</button>
+</div>
+
+<div class="section-divider" id="div-permanent">
+  <div class="section-divider-label">🏪 Permanent Crates</div>
+  <div class="section-divider-line"></div>
+</div>
+<div class="crates-wrapper" id="wrap-permanent">
+
+  <div class="crate-section" id="section-standard">
+    <div class="crate-header"><span class="crate-icon">📦</span><span class="crate-name cn-standard">Standard Crate</span><span class="crate-cost">75 Null Shards</span><span class="crate-count" id="count-standard"></span></div>
+    <div class="effects-grid" id="grid-standard"></div>
+  </div>
+
+  <div class="crate-section" id="section-megarock">
+    <div class="crate-header"><span class="crate-icon">🪨</span><span class="crate-name cn-megarock">MEGAROCK Crate</span><span class="crate-cost">100 Null Shards</span><span class="crate-count" id="count-megarock"></span></div>
+    <div class="effects-grid" id="grid-megarock"></div>
+  </div>
+
+  <div class="crate-section" id="section-bob">
+    <div class="crate-header"><span class="crate-icon">🌀</span><span class="crate-name cn-bob">Bob Crate</span><span class="crate-cost">150 Null Shards</span><span class="crate-count" id="count-bob"></span></div>
+    <div class="effects-grid" id="grid-bob"></div>
+  </div>
+
+  <div class="crate-section" id="section-barzil">
+    <div class="crate-header"><span class="crate-icon">🌎</span><span class="crate-name cn-barzil">Barzil Crate</span><span class="crate-cost">200 Null Shards</span><span class="crate-count" id="count-barzil"></span></div>
+    <div class="effects-grid" id="grid-barzil"></div>
+  </div>
+
+  <div class="crate-section" id="section-overkill">
+    <div class="crate-header"><span class="crate-icon">🔥</span><span class="crate-name cn-overkill">Overkill Crate</span><span class="crate-cost">1,500 Null Shards</span><span class="crate-count" id="count-overkill"></span></div>
+    <div class="effects-grid" id="grid-overkill"></div>
+  </div>
+
+</div>
+
+<div class="section-divider" id="div-limited">
+  <div class="section-divider-label">⏳ Limited Crates</div>
+  <div class="section-divider-line"></div>
+</div>
+<div class="crates-wrapper" id="wrap-limited">
+
+  <div class="crate-section" id="section-guide">
+    <div class="crate-header"><span class="crate-icon">📖</span><span class="crate-name cn-guide">Guide's Crate</span><span class="crate-cost">200 Null Shards · Limited</span><span class="crate-count" id="count-guide"></span></div>
+    <div class="effects-grid" id="grid-guide"></div>
+  </div>
+
+  <div class="crate-section" id="section-jacks">
+    <div class="crate-header"><span class="crate-icon">🎃</span><span class="crate-name cn-jacks">Jack's Crate</span><span class="crate-cost">200 Null Shards · Halloween 2024</span><span class="crate-count" id="count-jacks"></span></div>
+    <div class="effects-grid" id="grid-jacks"></div>
+  </div>
+
+  <div class="crate-section" id="section-peepmas">
+    <div class="crate-header"><span class="crate-icon">🎁</span><span class="crate-name cn-peepmas">Peepmas Giftbox</span><span class="crate-cost">200 Null Shards · Christmas 2024</span><span class="crate-count" id="count-peepmas"></span></div>
+    <div class="effects-grid" id="grid-peepmas"></div>
+  </div>
+
+  <div class="crate-section" id="section-valentines">
+    <div class="crate-header"><span class="crate-icon">💝</span><span class="crate-name cn-valentines">Valentines Crate</span><span class="crate-cost">150 Null Shards · Valentine's 2025</span><span class="crate-count" id="count-valentines"></span></div>
+    <div class="effects-grid" id="grid-valentines"></div>
+  </div>
+
+  <div class="crate-section" id="section-stpatricks">
+    <div class="crate-header"><span class="crate-icon">🍀</span><span class="crate-name cn-stpatricks">St. Patrick's Pot O' Gold</span><span class="crate-cost">200 Null Shards · St. Patrick's 2025</span><span class="crate-count" id="count-stpatricks"></span></div>
+    <div class="effects-grid" id="grid-stpatricks"></div>
+  </div>
+
+  <div class="crate-section" id="section-easter">
+    <div class="crate-header"><span class="crate-icon">🥚</span><span class="crate-name cn-easter">Easter Packegge</span><span class="crate-cost">200 Null Shards · Easter 2025</span><span class="crate-count" id="count-easter"></span></div>
+    <div class="effects-grid" id="grid-easter"></div>
+  </div>
+
+  <div class="crate-section" id="section-alchemist">
+    <div class="crate-header"><span class="crate-icon">⚗️</span><span class="crate-name cn-alchemist">Alchemist Crate</span><span class="crate-cost">200 Null Shards · Limited</span><span class="crate-count" id="count-alchemist"></span></div>
+    <div class="effects-grid" id="grid-alchemist"></div>
+  </div>
+
+  <div class="crate-section" id="section-evilbarzil">
+    <div class="crate-header"><span class="crate-icon">😈</span><span class="crate-name cn-evilbarzil">EVIL BARZIL Crate</span><span class="crate-cost">200 Null Shards · Aug 2025</span><span class="crate-count" id="count-evilbarzil"></span></div>
+    <div class="effects-grid" id="grid-evilbarzil"></div>
+  </div>
+
+  <div class="crate-section" id="section-coffin">
+    <div class="crate-header"><span class="crate-icon">⚰️</span><span class="crate-name cn-coffin">Little Coffin Of Horrors</span><span class="crate-cost">200 Null Shards · Halloween 2025</span><span class="crate-count" id="count-coffin"></span></div>
+    <div class="effects-grid" id="grid-coffin"></div>
+  </div>
+
+  <div class="crate-section" id="section-festive">
+    <div class="crate-header"><span class="crate-icon">❄️</span><span class="crate-name cn-festive">Festive Frost Box</span><span class="crate-cost">200 Null Shards · Christmas 2025</span><span class="crate-count" id="count-festive"></span></div>
+    <div class="effects-grid" id="grid-festive"></div>
+  </div>
+
+</div>
+
+<div class="section-divider" id="div-other">
+  <div class="section-divider-label">🎖️ Free &amp; Other Effects</div>
+  <div class="section-divider-line"></div>
+</div>
+<div class="crates-wrapper" id="wrap-other">
+  <div class="crate-section" id="section-freeother">
+    <div class="crate-header"><span class="crate-icon">🎖️</span><span class="crate-name cn-freeother">Free &amp; Badge Effects</span><span class="crate-cost">No cost</span><span class="crate-count" id="count-freeother"></span></div>
+    <div class="effects-grid" id="grid-freeother"></div>
+  </div>
+</div>
+
+<div class="no-results" id="noResults">No effects found! 🤷</div>
+<div class="footer-space"></div>
+
+<script>
+// ─── ALL DATA — corrected from the official Slap Battles wiki ────────────────
+const CRATES = {
+
+  // ══ PERMANENT ══════════════════════════════════════════════════════════════
+
+  standard: { limited:false, effects:[
+    // 1 legendary · 2 epic · 4 rare · 10 uncommon
+    {name:"Lightning",           rarity:"legendary", chance:"0.5%"},
+    {name:"Psychic",             rarity:"epic",      chance:"1.25%"},
+    {name:"Poisonous",           rarity:"epic",      chance:"1.25%"},
+    {name:"Fireworks",           rarity:"rare",      chance:"4.5%"},
+    {name:"Painted",             rarity:"rare",      chance:"4.5%"},
+    {name:"Plasma Blast",        rarity:"rare",      chance:"4.5%"},
+    {name:"Pixelated Lightning", rarity:"rare",      chance:"4.5%"},
+    {name:"Birdz",               rarity:"uncommon",  chance:"7.9%"},
+    {name:"Blue Explosion",      rarity:"uncommon",  chance:"7.9%"},
+    {name:"Butterflies",         rarity:"uncommon",  chance:"7.9%"},
+    {name:"Cartoony Water",      rarity:"uncommon",  chance:"7.9%"},
+    {name:"Explosion",           rarity:"uncommon",  chance:"7.9%"},
+    {name:"Forcefield",          rarity:"uncommon",  chance:"7.9%"},
+    {name:"Ink",                 rarity:"uncommon",  chance:"7.9%"},
+    {name:"Leaves",              rarity:"uncommon",  chance:"7.9%"},
+    {name:"Water",               rarity:"uncommon",  chance:"7.9%"},
+    {name:"Slime",               rarity:"uncommon",  chance:"7.9%"},
+  ]},
+
+  megarock: { limited:false, effects:[
+    // 1 mythical · 2 legendary · 3 epic · 5 rare · 8 uncommon
+    {name:"Energized",           rarity:"mythical",  chance:"0.1%"},
+    {name:"Glass",               rarity:"legendary", chance:"0.3%"},
+    {name:"Slashes",             rarity:"legendary", chance:"0.3%"},
+    {name:"Smoked",              rarity:"epic",      chance:"1.1%"},
+    {name:"Windy",               rarity:"epic",      chance:"1.1%"},
+    {name:"RGB",                 rarity:"epic",      chance:"1.1%"},
+    {name:"Glitched",            rarity:"rare",      chance:"5.2%"},
+    {name:"Gold",                rarity:"rare",      chance:"5.2%"},
+    {name:"Music",               rarity:"rare",      chance:"5.2%"},
+    {name:"Pixelated Explosion", rarity:"rare",      chance:"5.2%"},
+    {name:"Robux",               rarity:"rare",      chance:"5.2%"},
+    {name:"Blossom",             rarity:"uncommon",  chance:"8.75%"},
+    {name:"Duckie",              rarity:"uncommon",  chance:"8.75%"},
+    {name:"Fishy",               rarity:"uncommon",  chance:"8.75%"},
+    {name:"Lucky",               rarity:"uncommon",  chance:"8.75%"},
+    {name:"Moyai",               rarity:"uncommon",  chance:"8.75%"},
+    {name:"Noob",                rarity:"uncommon",  chance:"8.75%"},
+    {name:"Rocks",               rarity:"uncommon",  chance:"8.75%"},
+    {name:"Stop",                rarity:"uncommon",  chance:"8.75%"},
+  ]},
+
+  bob: { limited:false, effects:[
+    // 1 mythical · 2 legendary · 4 epic · 5 rare · 7 uncommon
+    {name:"Portal",              rarity:"mythical",  chance:"0.15%"},
+    {name:"Darkness",            rarity:"legendary", chance:"0.43%"},
+    {name:"Holy",                rarity:"legendary", chance:"0.43%"},
+    {name:"Cursed",              rarity:"epic",      chance:"1.25%"},
+    {name:"Fractal",             rarity:"epic",      chance:"1.25%"},
+    {name:"Gravity",             rarity:"epic",      chance:"1.25%"},
+    {name:"Phoenix",             rarity:"epic",      chance:"1.25%"},
+    {name:"Eye",                 rarity:"rare",      chance:"6.8%"},
+    {name:"Ice Shards",          rarity:"rare",      chance:"6.8%"},
+    {name:"Light",               rarity:"rare",      chance:"6.8%"},
+    {name:"Pixel Bubbles",       rarity:"rare",      chance:"6.8%"},
+    {name:"Rays",                rarity:"rare",      chance:"6.8%"},
+    {name:"Binary",              rarity:"uncommon",  chance:"8.57%"},
+    {name:"Bread",               rarity:"uncommon",  chance:"8.57%"},
+    {name:"Evil",                rarity:"uncommon",  chance:"8.57%"},
+    {name:"Heart",               rarity:"uncommon",  chance:"8.57%"},
+    {name:"Retro",               rarity:"uncommon",  chance:"8.57%"},
+    {name:"Sandy",               rarity:"uncommon",  chance:"8.57%"},
+    {name:"Snow",                rarity:"uncommon",  chance:"8.57%"},
+  ]},
+
+  barzil: { limited:false, effects:[
+    // 1 mythical · 2 legendary (CRUNCHY Explosion & Pablo's Clownery) · 3 epic · 4 rare · 10 uncommon
+    {name:"Nexus",                rarity:"mythical",  chance:"0.15%"},
+    {name:"CRUNCHY Explosion",    rarity:"legendary", chance:"0.43%"},
+    {name:"Pablo's Clownery",     rarity:"legendary", chance:"0.43%"},
+    {name:"Minefield",            rarity:"epic",      chance:"1.67%"},
+    {name:"Duel of the Ages",     rarity:"epic",      chance:"1.67%"},
+    {name:"Mortis' #1 Fan",       rarity:"epic",      chance:"1.67%"},
+    {name:"Portal Mist",          rarity:"rare",      chance:"8.5%"},
+    {name:"Oog's Damnation",      rarity:"rare",      chance:"8.5%"},
+    {name:"Clocktower Crash",     rarity:"rare",      chance:"8.5%"},
+    {name:"Pondering Orb",        rarity:"rare",      chance:"8.5%"},
+    {name:"Hello Cat",            rarity:"uncommon",  chance:"6%"},
+    {name:"Curious Cat",          rarity:"uncommon",  chance:"6%"},
+    {name:"Evil Cat",             rarity:"uncommon",  chance:"6%"},
+    {name:"Angry Cat",            rarity:"uncommon",  chance:"6%"},
+    {name:"Basketball Explosion", rarity:"uncommon",  chance:"6%"},
+    {name:"Falling Boulder",      rarity:"uncommon",  chance:"6%"},
+    {name:"Snoob Migration",      rarity:"uncommon",  chance:"6%"},
+    {name:"Pob's Light Snack",    rarity:"uncommon",  chance:"6%"},
+    {name:"J*b Application",      rarity:"uncommon",  chance:"6%"},
+    {name:"Erupting Bricks",      rarity:"uncommon",  chance:"6%"},
+  ]},
+
+  overkill: { limited:false, effects:[
+    // 1 mythical · 3 legendary · 6 epic — all Epic+
+    {name:"Hellfire Sigil",       rarity:"mythical",  chance:"1.5%"},
+    {name:"Popstar Spectacle",    rarity:"legendary", chance:"6.17%"},
+    {name:"Purple Rapture",       rarity:"legendary", chance:"6.17%"},
+    {name:"Toxic Puddle",         rarity:"legendary", chance:"6.17%"},
+    {name:"Aquatic Gateway",      rarity:"epic",      chance:"16%"},
+    {name:"Chilling Fog",         rarity:"epic",      chance:"16%"},
+    {name:"Rainbomb",             rarity:"epic",      chance:"16%"},
+    {name:"Sand Tornado",         rarity:"epic",      chance:"16%"},
+    {name:"Vibrant Supernova",    rarity:"epic",      chance:"16%"},
+  ]},
+
+  // ══ LIMITED ════════════════════════════════════════════════════════════════
+
+  guide: { limited:true, effects:[
+    // 1 mythical · 1 legendary · 1 epic · 2 rare · 4 uncommon
+    {name:"Relude",               rarity:"mythical",  chance:"0.15%"},
+    {name:"Hitman",               rarity:"legendary", chance:"0.85%"},
+    {name:"Divergent",            rarity:"epic",      chance:"5%"},
+    {name:"Pixel Sparkles",       rarity:"rare",      chance:"17%"},
+    {name:"Chip",                 rarity:"rare",      chance:"17%"},
+    {name:"Smart Cat",            rarity:"uncommon",  chance:"15%"},
+    {name:"Mini Crit",            rarity:"uncommon",  chance:"15%"},
+    {name:"Dumb Cat",             rarity:"uncommon",  chance:"15%"},
+    {name:"Garbage",              rarity:"uncommon",  chance:"15%"},
+  ]},
+
+  jacks: { limited:true, effects:[
+    // 1 mythical · 2 legendary · 3 epic · 4 rare · 6 uncommon
+    {name:"Damned",               rarity:"mythical",  chance:"0.15%"},
+    {name:"Jack O' Lantern",      rarity:"legendary", chance:"0.43%"},
+    {name:"Eerie Fog",            rarity:"legendary", chance:"0.43%"},
+    {name:"Abyss",                rarity:"epic",      chance:"~1.67%"},
+    {name:"Batty",                rarity:"epic",      chance:"~1.67%"},
+    {name:"Crimson Splash",       rarity:"epic",      chance:"~1.67%"},
+    {name:"Crows",                rarity:"rare",      chance:"8.5%"},
+    {name:"RUN",                  rarity:"rare",      chance:"8.5%"},
+    {name:"Shadow Bite",          rarity:"rare",      chance:"8.5%"},
+    {name:"Witch's Spell",        rarity:"rare",      chance:"8.5%"},
+    {name:"Cauldron Bubbles",     rarity:"uncommon",  chance:"10%"},
+    {name:"Fall Leaves",          rarity:"uncommon",  chance:"10%"},
+    {name:"Lava Skulls",          rarity:"uncommon",  chance:"10%"},
+    {name:"Realistic Eye",        rarity:"uncommon",  chance:"10%"},
+    {name:"Runes",                rarity:"uncommon",  chance:"10%"},
+    {name:"Troll Requiem",        rarity:"uncommon",  chance:"10%"},
+  ]},
+
+  peepmas: { limited:true, effects:[
+    // 1 mythical · 3 legendary · 2 epic · 4 rare · 6 uncommon
+    {name:"Enchanted",            rarity:"mythical",  chance:"0.15%"},
+    {name:"Sacred",               rarity:"legendary", chance:"0.28%"},
+    {name:"Blizzard",             rarity:"legendary", chance:"0.57%"},
+    {name:"Peppermint",           rarity:"legendary", chance:"0.85%"},
+    {name:"Northern Star",        rarity:"epic",      chance:"5%"},
+    {name:"Snowball",             rarity:"epic",      chance:"5%"},
+    {name:"SnowPeep",             rarity:"rare",      chance:"8.5%"},
+    {name:"Cookies & Milk",       rarity:"rare",      chance:"8.5%"},
+    {name:"Golden Sparkles",      rarity:"rare",      chance:"8.5%"},
+    {name:"Pixelated Snow",       rarity:"rare",      chance:"8.5%"},
+    {name:"Stained Glass",        rarity:"uncommon",  chance:"~10%"},
+    {name:"Candy Canes",          rarity:"uncommon",  chance:"~10%"},
+    {name:"Ornament",             rarity:"uncommon",  chance:"~10%"},
+    {name:"Bells",                rarity:"uncommon",  chance:"~10%"},
+    {name:"Gifts",                rarity:"uncommon",  chance:"~10%"},
+    {name:"Starry Night",         rarity:"uncommon",  chance:"~10%"},
+  ]},
+
+  valentines: { limited:true, effects:[
+    // 1 mythical · 1 legendary · 1 epic · 2 rare · 3 uncommon
+    {name:"HaloHeart",            rarity:"mythical",  chance:"0.15%"},
+    {name:"Glitter",              rarity:"legendary", chance:"0.85%"},
+    {name:"CupidsArrow",          rarity:"epic",      chance:"5%"},
+    {name:"BrokenHeart",          rarity:"rare",      chance:"8.5%"},
+    {name:"Candies",              rarity:"rare",      chance:"8.5%"},
+    {name:"ValentinesButterflies",rarity:"uncommon",  chance:"~28%"},
+    {name:"Chocolate",            rarity:"uncommon",  chance:"~28%"},
+    {name:"Roses",                rarity:"uncommon",  chance:"~28%"},
+  ]},
+
+  stpatricks: { limited:true, effects:[
+    // 1 mythical · 2 legendary · 4 epic · 4 rare · 5 uncommon
+    {name:"Saint Marked",         rarity:"mythical",  chance:"0.15%"},
+    {name:"Golden Harp",          rarity:"legendary", chance:"0.43%"},
+    {name:"Groggy",               rarity:"legendary", chance:"0.43%"},
+    {name:"Golden Horseshoe",     rarity:"epic",      chance:"~1.25%"},
+    {name:"Pinched",              rarity:"epic",      chance:"~1.25%"},
+    {name:"Pot O' Gold",          rarity:"epic",      chance:"~1.25%"},
+    {name:"Bloxy Charms",         rarity:"epic",      chance:"~1.25%"},
+    {name:"Clovers & Coins",      rarity:"rare",      chance:"8.5%"},
+    {name:"Golden Clovers",       rarity:"rare",      chance:"8.5%"},
+    {name:"Golden Coins",         rarity:"rare",      chance:"8.5%"},
+    {name:"Tinted Glass",         rarity:"rare",      chance:"8.5%"},
+    {name:"Boots & Hats",         rarity:"uncommon",  chance:"12%"},
+    {name:"Clovers",              rarity:"uncommon",  chance:"12%"},
+    {name:"Grass & Fireflies",    rarity:"uncommon",  chance:"12%"},
+    {name:"Hot Coffee",           rarity:"uncommon",  chance:"12%"},
+    {name:"Dust Bomb",            rarity:"uncommon",  chance:"12%"},
+  ]},
+
+  easter: { limited:true, effects:[
+    // 1 mythical · 2 legendary · 3 epic · 3 rare · 5 uncommon
+    {name:"Easter Eggtravaganza", rarity:"mythical",  chance:"0.15%"},
+    {name:"Easter Basket",        rarity:"legendary", chance:"0.43%"},
+    {name:"Approaching Storm",    rarity:"legendary", chance:"0.43%"},
+    {name:"Carrot Blast",         rarity:"epic",      chance:"~1.67%"},
+    {name:"Easter Eggsplosion",   rarity:"epic",      chance:"~1.67%"},
+    {name:"Floral Outburst",      rarity:"epic",      chance:"~1.67%"},
+    {name:"Marshmallow Critters", rarity:"rare",      chance:"8.5%"},
+    {name:"Sun Beams",            rarity:"rare",      chance:"8.5%"},
+    {name:"Wind Tornado",         rarity:"rare",      chance:"8.5%"},
+    {name:"Bugs Infestation",     rarity:"uncommon",  chance:"~12%"},
+    {name:"Butterfly Ascend",     rarity:"uncommon",  chance:"~12%"},
+    {name:"Feathers Burst",       rarity:"uncommon",  chance:"~12%"},
+    {name:"Kite Takeoff",         rarity:"uncommon",  chance:"~12%"},
+    {name:"PastelConfetti",       rarity:"uncommon",  chance:"~12%"},
+  ]},
+
+  alchemist: { limited:true, effects:[
+    // 1 mythical · 2 legendary · 3 epic · 4 rare · 5 uncommon
+    {name:"Pandecrownium",        rarity:"mythical",  chance:"0.15%"},
+    {name:"Demonic Hex",          rarity:"legendary", chance:"0.43%"},
+    {name:"Virulent Congregation",rarity:"legendary", chance:"0.43%"},
+    {name:"Conjuring Ink",        rarity:"epic",      chance:"~1.67%"},
+    {name:"Cosmic Glitter",       rarity:"epic",      chance:"~1.67%"},
+    {name:"Glooming Runes",       rarity:"epic",      chance:"~1.67%"},
+    {name:"Crimson Uproar",       rarity:"rare",      chance:"8.5%"},
+    {name:"Croaking Contamination",rarity:"rare",     chance:"8.5%"},
+    {name:"Moon Beams",           rarity:"rare",      chance:"8.5%"},
+    {name:"Stabbing Daggers",     rarity:"rare",      chance:"8.5%"},
+    {name:"Black Feather Burst",  rarity:"uncommon",  chance:"~12%"},
+    {name:"Electric Field",       rarity:"uncommon",  chance:"~12%"},
+    {name:"Floating Candles",     rarity:"uncommon",  chance:"~12%"},
+    {name:"Mushroom Outburst",    rarity:"uncommon",  chance:"~12%"},
+    {name:"Tome Burst",           rarity:"uncommon",  chance:"~12%"},
+  ]},
+
+  evilbarzil: { limited:true, effects:[
+    // 1 mythical · 2 legendary · 3 epic · 4 rare · 8 uncommon
+    {name:"Dodecanado",               rarity:"mythical",  chance:"0.15%"},
+    {name:"Intergalactic Clouds",     rarity:"legendary", chance:"0.43%"},
+    {name:"Interal Flare",            rarity:"legendary", chance:"0.43%"},
+    {name:"Demolitionist",            rarity:"epic",      chance:"~1.67%"},
+    {name:"Zeus's Smite",             rarity:"epic",      chance:"~1.67%"},
+    {name:"Shackled",                 rarity:"epic",      chance:"~1.67%"},
+    {name:"Dave's Strike",            rarity:"rare",      chance:"8.5%"},
+    {name:"High Roller",              rarity:"rare",      chance:"8.5%"},
+    {name:"Golden 🗿",                rarity:"rare",      chance:"8.5%"},
+    {name:"Cluttered Whirlwind",      rarity:"rare",      chance:"8.5%"},
+    {name:"Barzilian Moola",          rarity:"uncommon",  chance:"~9%"},
+    {name:"Intergalactic Sparkles",   rarity:"uncommon",  chance:"~9%"},
+    {name:"The Cooler Default",       rarity:"uncommon",  chance:"~9%"},
+    {name:"Burst Of Flame",           rarity:"uncommon",  chance:"~9%"},
+    {name:"Defenestration",           rarity:"uncommon",  chance:"~9%"},
+    {name:"Looming Fog",              rarity:"uncommon",  chance:"~9%"},
+    {name:"Rocky Prison",             rarity:"uncommon",  chance:"~9%"},
+    {name:"Stabbing Nails",           rarity:"uncommon",  chance:"~9%"},
+  ]},
+
+  coffin: { limited:true, effects:[
+    // 1 mythical · 2 legendary · 3 epic · 4 rare · 5 uncommon
+    {name:"Necrobloxicon",        rarity:"mythical",  chance:"0.15%"},
+    {name:"Love Bite",            rarity:"legendary", chance:"0.43%"},
+    {name:"Spirit Surge",         rarity:"legendary", chance:"0.43%"},
+    {name:"Zombie Piñata",        rarity:"epic",      chance:"~1.67%"},
+    {name:"Werewolf Laceration",  rarity:"epic",      chance:"~1.67%"},
+    {name:"Corrupting Mark",      rarity:"epic",      chance:"~1.67%"},
+    {name:"Putrid Spew",          rarity:"rare",      chance:"8.5%"},
+    {name:"Pumpkin Splash",       rarity:"rare",      chance:"8.5%"},
+    {name:"Ghostly Cleavers",     rarity:"rare",      chance:"8.5%"},
+    {name:"Cozy Moon",            rarity:"rare",      chance:"8.5%"},
+    {name:"Witch's Treats",       rarity:"uncommon",  chance:"~12%"},
+    {name:"Pumpkin Moon",         rarity:"uncommon",  chance:"~12%"},
+    {name:"Let's Take A Look",    rarity:"uncommon",  chance:"~12%"},
+    {name:"Vapire Cat",           rarity:"uncommon",  chance:"~12%"},
+    {name:"Spider Infestation",   rarity:"uncommon",  chance:"~12%"},
+  ]},
+
+  festive: { limited:true, effects:[
+    // 2 mythical · 4 legendary · 6 epic · 6 rare · 5 uncommon
+    {name:"Winter Wonderland",    rarity:"mythical",  chance:"0.15%"},
+    {name:"Winter Blessed Spawn", rarity:"mythical",  chance:"0.15%"},
+    {name:"Stellar Glow",         rarity:"legendary", chance:"0.43%"},
+    {name:"Artic Blast",          rarity:"legendary", chance:"0.43%"},
+    {name:"Stellar Spawn",        rarity:"legendary", chance:"0.43%"},
+    {name:"Artic Spawn",          rarity:"legendary", chance:"0.43%"},
+    {name:"Starfall",             rarity:"epic",      chance:"~0.83%"},
+    {name:"Jingle Bell",          rarity:"epic",      chance:"~0.83%"},
+    {name:"Frigid Light",         rarity:"epic",      chance:"~0.83%"},
+    {name:"Starfallen Spawn",     rarity:"epic",      chance:"~0.83%"},
+    {name:"Jolly Spawn",          rarity:"epic",      chance:"~0.83%"},
+    {name:"Flashy Spawn",         rarity:"epic",      chance:"~0.83%"},
+    {name:"Winter Radiance",      rarity:"rare",      chance:"~5.67%"},
+    {name:"Stabbing Icicles",     rarity:"rare",      chance:"~5.67%"},
+    {name:"Seal",                 rarity:"rare",      chance:"~5.67%"},
+    {name:"Festive Lights",       rarity:"rare",      chance:"~5.67%"},
+    {name:"Radiant Spawn",        rarity:"rare",      chance:"~5.67%"},
+    {name:"Festive Spawn",        rarity:"rare",      chance:"~5.67%"},
+    {name:"Lumps of Coal",        rarity:"uncommon",  chance:"~4%"},
+    {name:"Ginger Treat",         rarity:"uncommon",  chance:"~4%"},
+    {name:"Giftsplosion",         rarity:"uncommon",  chance:"~4%"},
+    {name:"Snowstorm",            rarity:"uncommon",  chance:"~4%"},
+    {name:"Warm Up",              rarity:"uncommon",  chance:"~4%"},
+  ]},
+
+  // ══ FREE / OTHER ══════════════════════════════════════════════════════════
+
+  freeother: { limited:false, effects:[
+    {name:"Default",              rarity:"common", chance:"—",    source:"Free on join"},
+    {name:"Diamonds",             rarity:"vip",    chance:"100%", source:"VIP Gamepass"},
+    {name:"Grug",                 rarity:"other",  chance:"—",    source:"Limited event reward"},
+    {name:"DA CAT",               rarity:"other",  chance:"—",    source:"Limited event reward"},
+    {name:"Dave's Down Smash",    rarity:"other",  chance:"—",    source:"Dodecacide badge"},
+    {name:"Jackpot!",             rarity:"other",  chance:"—",    source:"Die Hard badge"},
+    {name:"Noobality Warp",       rarity:"other",  chance:"—",    source:"Jumping Dimensions badge"},
+  ]},
+};
+
+const PERM_KEYS    = ['standard','megarock','bob','barzil','overkill'];
+const LIMITED_KEYS = ['guide','jacks','peepmas','valentines','stpatricks','easter','alchemist','evilbarzil','coffin','festive'];
+const OTHER_KEYS   = ['freeother'];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let activeRarity = 'all';
+function loadChecked(){try{return JSON.parse(localStorage.getItem('sb_checked3')||'{}');}catch{return{};}}
+function saveChecked(o){try{localStorage.setItem('sb_checked3',JSON.stringify(o));}catch{}}
+let checked = loadChecked();
+const key = (c,n) => `${c}::${n}`;
+
+function toggleCard(card,crate,name){
+  const on = !card.classList.contains('checked');
+  card.classList.toggle('checked',on);
+  if(on) checked[key(crate,name)]=true; else delete checked[key(crate,name)];
+  saveChecked(checked); updateBar();
+}
+function clearAll(){
+  checked={}; saveChecked(checked);
+  document.querySelectorAll('.effect-card.checked').forEach(c=>c.classList.remove('checked'));
+  updateBar();
+}
+function updateBar(){
+  const total=document.querySelectorAll('.effect-card').length;
+  const coll=document.querySelectorAll('.effect-card.checked').length;
+  document.getElementById('collectedCount').textContent=coll;
+  document.getElementById('totalCount').textContent=total;
+  document.getElementById('progressFill').style.width=total?`${coll/total*100}%`:'0%';
+}
+
+// ─── BUILD ────────────────────────────────────────────────────────────────────
+function buildCard(eff,ck){
+  const card=document.createElement('div');
+  card.className='effect-card';
+  card.dataset.rarity=eff.rarity;
+  card.dataset.name=eff.name.toLowerCase();
+  if(checked[key(ck,eff.name)]) card.classList.add('checked');
+  const isLimited=CRATES[ck].limited;
+  const srcHtml=(eff.source&&eff.chance!=='—')?`<div class="effect-chance" style="font-size:.73rem;margin-top:.12rem">${eff.source}</div>`:'';
+  card.innerHTML=`
+    <div class="checkmark">✓</div>
+    <div style="padding-right:1.8rem">
+      <div style="margin-bottom:.25rem">
+        <span class="rarity-badge ${eff.rarity}">${eff.rarity}</span>
+        ${isLimited?'<span class="limited-tag">Limited</span>':''}
+      </div>
+      <div class="effect-name">${eff.name}</div>
+      <div class="effect-chance">${eff.chance!=='—'?eff.chance+' chance':(eff.source||'')}</div>
+      ${srcHtml}
+    </div>`;
+  card.addEventListener('click',()=>toggleCard(card,ck,eff.name));
+  return card;
+}
+
+function buildGrids(){
+  let total=0;
+  for(const[ck,crate] of Object.entries(CRATES)){
+    const grid=document.getElementById(`grid-${ck}`);
+    if(grid) crate.effects.forEach(e=>grid.appendChild(buildCard(e,ck)));
+    const cnt=document.getElementById(`count-${ck}`);
+    if(cnt) cnt.textContent=`${crate.effects.length} effects`;
+    total+=crate.effects.length;
+  }
+  document.getElementById('statsBar').textContent=`Showing ${total} effects total`;
+  updateBar();
+}
+
+// ─── FILTER ───────────────────────────────────────────────────────────────────
+function setRarity(r){
+  activeRarity=r;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.toggle('active',b.dataset.f===r));
+  filterAll();
+}
+function filterAll(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  let vis=0;
+  document.querySelectorAll('.effect-card').forEach(card=>{
+    const show=(activeRarity==='all'||card.dataset.rarity===activeRarity)&&(!q||card.dataset.name.includes(q));
+    card.classList.toggle('hidden',!show);
+    if(show) vis++;
+  });
+  for(const ck of Object.keys(CRATES)){
+    const sec=document.getElementById(`section-${ck}`);
+    const grid=document.getElementById(`grid-${ck}`);
+    if(!sec||!grid) continue;
+    const n=[...grid.querySelectorAll('.effect-card:not(.hidden)')].length;
+    sec.style.display=n===0?'none':'';
+    const cnt=document.getElementById(`count-${ck}`);
+    if(cnt) cnt.textContent=n>0?`${n} effect${n!==1?'s':''}`:'';
+  }
+  const anyVis=keys=>keys.some(k=>{const s=document.getElementById(`section-${k}`);return s&&s.style.display!=='none';});
+  [['div-permanent','wrap-permanent',PERM_KEYS],
+   ['div-limited','wrap-limited',LIMITED_KEYS],
+   ['div-other','wrap-other',OTHER_KEYS]].forEach(([d,w,keys])=>{
+    const v=anyVis(keys);
+    const de=document.getElementById(d); if(de) de.style.display=v?'':'none';
+    const we=document.getElementById(w); if(we) we.style.display=v?'':'none';
+  });
+  document.getElementById('noResults').style.display=vis===0?'block':'none';
+  document.getElementById('statsBar').textContent=`Showing ${vis} effect${vis!==1?'s':''}`;
+}
+
+buildGrids();
+</script>
+</body>
+</html>
